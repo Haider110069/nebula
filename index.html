@@ -457,6 +457,18 @@
             color: #ff6b6b;
         }
         
+        /* API Key Notice */
+        .api-notice {
+            background: rgba(255, 193, 7, 0.1);
+            border: 1px solid rgba(255, 193, 7, 0.3);
+            border-radius: 15px;
+            padding: 20px;
+            margin: 20px 0;
+            text-align: center;
+            color: #ffc107;
+            display: none;
+        }
+        
         /* Responsive Design */
         @media (max-width: 1024px) {
             header {
@@ -537,7 +549,7 @@
         <div class="nebula"></div>
         <div class="nebula"></div>
     </div>
-
+    
     <!-- Header -->
     <header>
         <div class="logo">
@@ -559,9 +571,15 @@
             <span>My Location</span>
         </button>
     </header>
-
+    
     <!-- Main Content -->
     <main>
+        <!-- API Key Notice -->
+        <div class="api-notice" id="apiNotice">
+            <p><strong>API Key Required:</strong> Please add your OpenWeatherMap API key to use this weather app.</p>
+            <p>Get your free API key from <a href="https://openweathermap.org/api" target="_blank" style="color: var(--primary-color);">OpenWeatherMap</a></p>
+        </div>
+        
         <!-- Loading Spinner -->
         <div class="loading" id="loadingSpinner">
             <div class="spinner"></div>
@@ -669,6 +687,7 @@
         const locationBtn = document.getElementById('locationBtn');
         const loadingSpinner = document.getElementById('loadingSpinner');
         const errorMessage = document.getElementById('errorMessage');
+        const apiNotice = document.getElementById('apiNotice');
         
         // Weather Elements
         const cityName = document.getElementById('cityName');
@@ -686,7 +705,8 @@
         const forecastContainer = document.getElementById('forecastContainer');
         
         // API Configuration
-        const apiKey = 'bd5e378503939ddaee76f12ad7a97608';
+        // IMPORTANT: Replace 'YOUR_API_KEY_HERE' with your actual OpenWeatherMap API key
+        const apiKey = 'YOUR_API_KEY_HERE';
         const apiUrl = 'https://api.openweathermap.org/data/2.5';
         
         // Initialize
@@ -697,8 +717,15 @@
             // Create animated stars
             createStars();
             
-            // Load default weather (New York)
-            getWeatherByCity('New York');
+            // Check if API key is set
+            if (apiKey === 'YOUR_API_KEY_HERE') {
+                apiNotice.style.display = 'block';
+                // Load demo data
+                loadDemoData();
+            } else {
+                // Load default weather (New York)
+                getWeatherByCity('New York');
+            }
         });
         
         // Event Listeners
@@ -785,6 +812,11 @@
         }
         
         async function getWeatherByCity(city) {
+            if (apiKey === 'YOUR_API_KEY_HERE') {
+                showError('Please add your OpenWeatherMap API key to use this feature.');
+                return;
+            }
+            
             showLoading();
             try {
                 const response = await fetch(`${apiUrl}/weather?q=${city}&appid=${apiKey}&units=metric`);
@@ -801,6 +833,11 @@
         }
         
         async function getWeatherByCoords(lat, lon) {
+            if (apiKey === 'YOUR_API_KEY_HERE') {
+                showError('Please add your OpenWeatherMap API key to use this feature.');
+                return;
+            }
+            
             showLoading();
             try {
                 const response = await fetch(`${apiUrl}/weather?lat=${lat}&lon=${lon}&appid=${apiKey}&units=metric`);
@@ -817,6 +854,10 @@
         }
         
         async function getForecast(lat, lon) {
+            if (apiKey === 'YOUR_API_KEY_HERE') {
+                return;
+            }
+            
             try {
                 const response = await fetch(`${apiUrl}/forecast?lat=${lat}&lon=${lon}&appid=${apiKey}&units=metric`);
                 if (!response.ok) {
@@ -920,6 +961,54 @@
             };
             
             return iconMap[iconCode] || '<i class="fas fa-question"></i>';
+        }
+        
+        // Demo data for when API key is not set
+        function loadDemoData() {
+            // Current weather demo data
+            cityName.textContent = 'Demo City, DC';
+            weatherDescription.textContent = 'Partly Cloudy';
+            temperature.textContent = '22';
+            windSpeed.textContent = '3.5 m/s';
+            humidity.textContent = '65%';
+            pressure.textContent = '1013 hPa';
+            feelsLike.textContent = '24';
+            visibility.textContent = '10.0 km';
+            sunrise.textContent = '6:45 AM';
+            sunset.textContent = '7:30 PM';
+            weatherIcon.innerHTML = '<i class="fas fa-cloud-sun"></i>';
+            
+            // Forecast demo data
+            const demoDays = ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday'];
+            const demoIcons = [
+                '<i class="fas fa-sun"></i>',
+                '<i class="fas fa-cloud-sun"></i>',
+                '<i class="fas fa-cloud"></i>',
+                '<i class="fas fa-cloud-rain"></i>',
+                '<i class="fas fa-cloud-sun"></i>'
+            ];
+            const demoTemps = [
+                { min: 18, max: 25 },
+                { min: 17, max: 23 },
+                { min: 16, max: 21 },
+                { min: 15, max: 19 },
+                { min: 17, max: 24 }
+            ];
+            
+            forecastContainer.innerHTML = '';
+            
+            demoDays.forEach((day, index) => {
+                const forecastCard = document.createElement('div');
+                forecastCard.classList.add('forecast-card');
+                forecastCard.innerHTML = `
+                    <div class="forecast-day">${day}</div>
+                    <div class="forecast-icon">${demoIcons[index]}</div>
+                    <div class="forecast-temp">${demoTemps[index].max}°</div>
+                    <div class="forecast-range">${demoTemps[index].min}° - ${demoTemps[index].max}°</div>
+                `;
+                
+                forecastContainer.appendChild(forecastCard);
+            });
         }
     </script>
 </body>
